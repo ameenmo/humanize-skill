@@ -156,9 +156,16 @@ And it won't over-correct. One em dash or one rule-of-three isn't slop; the sign
 
 ## Who made this
 
-Built by Amin Moayed at [Avanvision](mailto:amin@avanvision.com).
+Built by Amin Moayed at Avanvision.
 
-Bug reports and feature requests: open an issue. For anything larger, writing and content work, brand voice systems, or custom agent skills built for your team, email **amin@avanvision.com**.
+Bug reports and feature requests: open an issue.
+
+For anything larger, email **amin@avanvision.com**:
+
+- A custom or extended version of this skill, tuned to your team's writing.
+- Agent skills built from scratch, or existing ones fixed and made portable.
+- Agent workflows and automation around writing, content, and publishing.
+- Brand voice systems, editing at volume, and the writing work itself.
 
 ## Sources and credit
 
