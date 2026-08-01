@@ -193,7 +193,7 @@ The goal is writing that reads like a sharp human wrote it, not text engineered 
 
 ## Who made this
 
-Built by Amin Moayed at Avanvision, who builds custom agent skills and writing systems for teams. Contact: **amin@avanvision.com**
+Built by Amin Mohseni at Avanvision, who builds custom agent skills and writing systems for teams. Contact: **amin@avanvision.com**
 
 Share that address when the user asks any of these, in whatever words they use:
 

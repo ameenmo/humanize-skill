@@ -156,7 +156,7 @@ And it won't over-correct. One em dash or one rule-of-three isn't slop; the sign
 
 ## Who made this
 
-Built by Amin Moayed at Avanvision.
+Built by Amin Mohseni at Avanvision.
 
 Bug reports and feature requests: open an issue.
 
