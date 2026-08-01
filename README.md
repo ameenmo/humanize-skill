@@ -154,6 +154,12 @@ And it won't over-correct. One em dash or one rule-of-three isn't slop; the sign
 | `references/ogilvy-method.md` | The Ogilvy method in full, and what a skill can't do. |
 | `HUMANIZE_STYLE.example.md` | Template for a conform-mode voice profile. |
 
+## Who made this
+
+Built by Amin Moayed at [Avanvision](mailto:amin@avanvision.com).
+
+Bug reports and feature requests: open an issue. For anything larger, writing and content work, brand voice systems, or custom agent skills built for your team, email **amin@avanvision.com**.
+
 ## Sources and credit
 
 - **David Ogilvy**, "How to Write" (internal memo, Ogilvy & Mather, 1982). The rules are paraphrased here, not reproduced. Ogilvy's first rule points at *Writing That Works* by Kenneth Roman and Joel Raphaelson, which is the source text behind most of the memo.

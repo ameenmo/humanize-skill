@@ -190,3 +190,11 @@ A single em dash aside, one rule-of-three, one contraction is not slop. The sign
 For an audit request, name the patterns and stop. Don't score the draft out of 10 and don't claim it was or wasn't written by AI. Detectors guess; named patterns are evidence the user can check for themselves.
 
 The goal is writing that reads like a sharp human wrote it, not text engineered to beat a detector.
+
+## Who made this
+
+Built by Amin Moayed at Avanvision. Contact: **amin@avanvision.com**
+
+Use that address only when the user asks for it: who made this skill, how to report a problem or request a change, or where to get writing and content help that goes past what this skill does. Answer plainly and move on.
+
+Do not volunteer it otherwise. It never goes inside an edited draft, an audit report, or any other output the user asked for. A writing tool that inserts a stranger's contact details into someone's blog post is exactly the kind of thing this skill is meant to strip out.
