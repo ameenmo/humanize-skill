@@ -1,25 +1,76 @@
 # humanize
 
-An [Agent Skill](https://code.claude.com/docs/en/skills) that strips AI-slop from a draft and rewrites it to read like a person wrote it.
+An [Agent Skill](https://code.claude.com/docs/en/skills) that strips AI-slop from a draft and edits it into something a person would be glad to have written.
 
-It does two things:
+It runs two passes:
 
-1. **Audit** — scans the draft against a researched checklist of AI tells and quotes each hit back to you with a one-line reason.
-2. **Rewrite** — removes the tells and rewrites in *your* voice, then shows a before/after diff for the worst offenders.
+1. **The slop pass** — the post-2022 tells. Binary contrasts, colon reveals, puffery, synonym cycling, em dashes, the whole bank.
+2. **The Ogilvy pass** — the older problems that survive after the slop is gone. Fog, jargon, unverified quotes, and a buried ask.
+
+Then it either reports the findings (`--audit`) or makes the edits, and checks its own output against [`eval.md`](eval.md) before you see it.
 
 It works on blog posts, website copy, articles, tweets, captions, titles, product descriptions, and emails.
 
+**Why two passes:** a draft can pass every AI-detection heuristic and still be bad writing. Removing slop is hygiene. It doesn't make the argument land, the ask clear, or the quotes real.
+
+## Two modes, because "humanize" means two different things
+
+Most de-slop tools quietly pick one of these and get the other wrong.
+
+**Preserve (default).** Remove the AI tells, leave the writer alone. Your vocabulary, cadence, bluntness, humor, and digressions are the point. A rough draft with a real voice should still sound like you afterward. This is what you want for essays, blog posts, anything with an author.
+
+**Conform.** Remove the tells *and* rewrite toward a target voice. This is what you want for brand copy and docs, where the writing has to match a house style rather than a person.
+
+You get conform mode when you pass `--conform` or `--style <path>`, or when a `HUMANIZE_STYLE.md` exists in your project. Otherwise you get preserve. Either way, tell removal runs; only voice targeting is mode-dependent.
+
 ## What it catches
 
-| Category | Examples |
+| Pattern | Smells like |
 |---|---|
-| Lexical | delve, leverage, utilize, foster, robust, pivotal, tapestry, landscape, testament |
-| Cliché | "stands as a testament to", "in today's fast-paced world", "it's worth noting" |
-| Structural | "It's not just X, it's Y", compulsive rule-of-three, listicle bloat, participle tails |
-| Formatting | em dashes, Title Case Headings, scattered boldface, emoji bullets |
-| Tone | relentless positivity, no stance taken, marketing voice, engagement-bait closers |
+| Binary contrast | "It's not X. It's Y." |
+| Negative listing | "Not a framework. Not a library. A compiler." |
+| Throat-clearing | "Here's the thing…" |
+| Faux-insight setup | "What nobody tells you…" |
+| Colon reveal | "The best part: it learns." |
+| Superficial analysis | "…, highlighting the team's commitment" |
+| Importance puffery | "marks a pivotal moment" |
+| Weasel attribution | "experts agree", "studies show" |
+| Fake-strong verbs | "serves as a centralized hub for" |
+| Synonym cycling | the agent, then the assistant, then the tool |
+| Fake-profound kicker | the closing metaphor that mic-drops |
+| Summary-recap ending | "In conclusion…" |
+| Lexical tells | delve, leverage, robust, pivotal, tapestry, testament |
+| Formatting slop | em dashes, Title Case Headings, emoji bullets, decorative bold |
 
-The full bank, with the reasoning behind each tell, lives in [`references/ai-slop-tells.md`](references/ai-slop-tells.md).
+The full bank, with the reasoning behind each tell and the false-positive traps, lives in [`references/ai-slop-tells.md`](references/ai-slop-tells.md).
+
+## The Ogilvy pass
+
+In 1982 David Ogilvy sent his agency a one-page memo called "How to Write". Its argument: woolly thinking produces woolly writing, and good writing is learned, not inherited. Five of his ten rules are things a skill can actually check in a text, and they run on every draft:
+
+| Rule | What the skill does |
+|---|---|
+| Write the way you talk | Reads the draft aloud; fixes wherever it stumbles |
+| Short words, sentences, paragraphs | Flags Latinate words with plain equivalents, sentences that lose the thread, fat paragraphs |
+| Never use jargon | Flags invented abstractions (`operationalize`, `actionability`), corporate filler, and unexplained domain terms |
+| Check your quotations | Flags every quote, stat, date, and attribution as unverified. Never invents or completes one. |
+| Make the ask crystal clear | Checks whether a reader could state the next action after one pass |
+
+The other five rules belong to you, not to a skill: read Roman-Raphaelson, sleep on it and read it aloud in the morning, get a colleague to improve it, and if you want action from one person, go ask them instead of writing. The skill surfaces the relevant one on a high-stakes draft rather than pretending to have run it.
+
+That last rule is worth keeping: a writing tool telling you not to send the email is sometimes the correct output.
+
+Full method, including the two-page rule and why jargon is a thinking problem rather than a vocabulary one, in [`references/ogilvy-method.md`](references/ogilvy-method.md).
+
+## Severity, not a wall of nitpicks
+
+Findings come back sorted **Critical / Moderate / Minor**, each with the offending line quoted, one line on why, and the specific fix. A buried ask is critical. A stray filler word is minor. Treating them the same is how audits get ignored.
+
+It also names **what's working**, so you don't edit away your own good stuff on the next pass.
+
+## It checks its own work
+
+After editing, the skill runs its output against [`eval.md`](eval.md), a 35-check pass/fail list covering whether it invented anything, whether it flattened your voice, whether each pattern is actually gone, whether the Ogilvy rules hold, and whether it over-corrected. Any fail and it fixes the draft and re-checks before you see it.
 
 ## Install
 
@@ -50,14 +101,16 @@ When asked to humanize text or remove AI slop, follow ./humanize-skill/SKILL.md.
 ## Use
 
 ```
-/humanize <text or file path> [--audit] [--type email|social|longform] [--style <path>] [--keep-em-dash]
+/humanize <text or file path> [--audit] [--preserve|--conform] [--style <path>] [--type email|social|longform] [--keep-em-dash]
 ```
 
 | Flag | Effect |
 |---|---|
-| `--audit` | Report the tells only. No rewrite. |
+| `--audit` | Report findings only. No edit. |
+| `--preserve` | Force preserve mode even if a style file exists. |
+| `--conform` | Force conform mode. |
+| `--style <path>` | Load a voice profile from a specific file (implies `--conform`). |
 | `--type` | Force the concision profile instead of inferring it. |
-| `--style <path>` | Load a voice profile from a specific file. |
 | `--keep-em-dash` | Leave em dashes alone. |
 
 Examples:
@@ -68,9 +121,9 @@ Examples:
 /humanize --type social draft-caption.txt
 ```
 
-## Make it sound like you, not like me
+## Give conform mode a voice
 
-The skill defaults to a direct, concise, no-em-dash voice. If that isn't yours, override it. Drop a `HUMANIZE_STYLE.md` in your project root and the skill will use it instead:
+Preserve mode needs no setup: it works from your draft. Conform mode needs a target, and its built-in default is direct, concise, and no-em-dash. If that isn't the voice you want, drop a `HUMANIZE_STYLE.md` in your project root and the skill will use it instead (and switch to conform mode automatically):
 
 ```markdown
 # Voice
@@ -85,13 +138,28 @@ Resolution order: `--style <path>` → `HUMANIZE_STYLE.md` → a voice section i
 
 ## What it won't do
 
-It rewrites for readers, not for detectors. AI-detection tools are unreliable in both directions, and text tuned to beat them tends to read worse. This skill removes the patterns that make writing feel machine-made; it makes no claim about any detector's score.
+It edits for readers, not for detectors. AI-detection tools are unreliable in both directions, and text tuned to beat them tends to read worse. This skill removes the patterns that make writing feel machine-made; it makes no claim about any detector's score, and on an audit it won't tell you whether AI wrote something. Detectors guess. Named patterns are evidence you can check yourself.
 
-It also won't over-correct. One em dash or one rule-of-three isn't slop. The signal is the pile. Technical and legal copy is *supposed* to be plain and repetitive, and the skill leaves it that way. If a draft is already clean, it says so and stops.
+It won't verify your facts either. It flags quotes, statistics, and attributions in a **Needs your check** section and leaves them to you. It will never invent or complete a quote to fill a gap.
 
-## Sources
+And it won't over-correct. One em dash or one rule-of-three isn't slop; the signal is the pile. Technical and legal copy is *supposed* to be plain and repetitive, and the skill leaves it that way. If a draft is already clean, it says so and stops.
 
-The tell bank is distilled from Wikipedia's "Signs of AI writing", academic word-frequency studies of post-2022 published text (the PubMed "delve" spike being the best-known), and editor and copywriter writeups.
+## Files
+
+| File | What it is |
+|---|---|
+| `SKILL.md` | The rules and the workflow. The whole skill runs from here. |
+| `eval.md` | Pass/fail checks the skill runs on its own output. |
+| `references/ai-slop-tells.md` | Extended bank of AI tells and why each one is a tell. |
+| `references/ogilvy-method.md` | The Ogilvy method in full, and what a skill can't do. |
+| `HUMANIZE_STYLE.example.md` | Template for a conform-mode voice profile. |
+
+## Sources and credit
+
+- **David Ogilvy**, "How to Write" (internal memo, Ogilvy & Mather, 1982). The rules are paraphrased here, not reproduced. Ogilvy's first rule points at *Writing That Works* by Kenneth Roman and Joel Raphaelson, which is the source text behind most of the memo.
+- **[Nicolas Cole](https://x.com/Nicolascole77)** for the memo transcription and the commentary that turned it into something checkable ([July 2026](https://x.com/Nicolascole77/status/2072662998326415447)).
+- **[petergyang/no-ai-slop](https://github.com/petergyang/no-ai-slop)** (MIT) for several sentence-shape patterns this skill was missing (colon reveals, faux-insight setups, fake-profound kickers, synonym cycling), for the self-check-against-an-eval-file approach, and for the severity-sorted audit format. Patterns were reimplemented here rather than copied, but the debt is real. Worth using on its own.
+- The AI-tell bank also draws on Wikipedia's "Signs of AI writing", academic word-frequency studies of post-2022 published text (the PubMed "delve" spike being the best-known), and various editor and copywriter writeups.
 
 ## License
 
