@@ -39,29 +39,32 @@ Skip if you ran in preserve mode.
 18. Summary-recap endings cut, so the piece ends on a concrete point, takeaway, or next action?
 19. Em dashes handled per the active rule (removed by default; kept under `--keep-em-dash` or a profile that permits them)?
 20. Formatting slop gone: emoji headings, decorative mid-sentence bold, headers over tiny sections, bullets that should be prose?
+21. False ranges, stock challenge sections, chatbot wrappers, knowledge-limit padding, unraised objections, heading echoes, and irrelevant old-version narration gone?
 
 ## The Ogilvy pass
 
-21. Does it read aloud cleanly, with no sentence you stumble over or run out of breath in?
-22. Is every long Latinate word there because the plain one wouldn't do?
-23. Are long sentences and fat paragraphs split where they were genuinely hard to follow, and left alone where they read fine?
-24. Is jargon cut, explained, or named as a thinking problem rather than swapped for a different fancy word?
-25. Is every quotation, statistic, date, and attribution either sourced or flagged in **Needs your check**, with nothing invented, completed, or tidied?
-26. Could the reader state the next action, or the takeaway, after one pass? If the draft has no ask, did you say so?
-27. If the piece needs one person to act and a conversation would work better, did you say that?
-28. Is the two-page reasoning applied as a flag on bloat, not as a cut to someone's longform draft?
+22. Does it read aloud cleanly, with no sentence you stumble over or run out of breath in?
+23. Is every long Latinate word there because the plain one would lose meaning?
+24. Are long sentences and fat paragraphs split where they were hard to follow, and left alone where they read fine?
+25. Is jargon cut, defined once, or named as a thinking problem rather than swapped for a different fancy word?
+26. Are exact identifiers, commands, paths, types, errors, product names, and terms of art unchanged?
+27. Is each load-bearing quotation, statistic, attribution, or unsupported factual claim sourced or flagged in **Needs your check**?
+28. Could the reader state the next action, or the takeaway, after one pass? If the draft has no ask, did you say so?
+29. If the piece needs one person to act and a conversation would work better, did you say that?
+30. Is the two-page reasoning applied as a flag on bloat, not as a cut to someone's longform draft?
 
 ## Read it back
 
-29. Does it avoid robotic symmetry: repeated sentence shapes, uniform paragraph length, topic→support→restate?
-30. Does varied rhythm survive, without stacked punchy fragments used as a drumbeat?
-31. Active voice with human subjects, and no inanimate thing doing a human verb?
-32. Would this sound natural read aloud to a sharp colleague?
-33. Does the output include the full edited draft plus a short **What changed** section?
+31. Does it avoid robotic symmetry: repeated sentence shapes, uniform paragraph length, topic→support→restate?
+32. Does varied rhythm survive, without stacked punchy fragments used as a drumbeat?
+33. Does active voice make the actor clear where the actor matters, without forced human subjects?
+34. Would this sound natural read aloud to a sharp colleague?
+35. Does the output include the full edited draft plus a short **What changed** section?
+36. Do the notes lead with the result, use plain words, and omit tool narration?
 
 ## Audit runs
 
 Skip unless `--audit`.
 
-34. Is every finding a named pattern with the offending line quoted and a short fix?
-35. Did you avoid rewriting the draft, scoring it, and claiming AI authorship either way?
+37. Is every finding a named pattern with the offending line quoted and a short fix?
+38. Did you avoid rewriting the draft, scoring it, and claiming AI authorship either way?

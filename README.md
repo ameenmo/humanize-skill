@@ -21,7 +21,7 @@ Most de-slop tools quietly pick one of these and get the other wrong.
 
 **Conform.** Remove the tells *and* rewrite toward a target voice. This is what you want for brand copy and docs, where the writing has to match a house style rather than a person.
 
-You get conform mode when you pass `--conform` or `--style <path>`, or when a `HUMANIZE_STYLE.md` exists in your project. Otherwise you get preserve. Either way, tell removal runs; only voice targeting is mode-dependent.
+You get conform mode when you pass `--conform` or `--style <path>`, or when a `HUMANIZE_STYLE.md` exists in your project. A house-copy request can also load a voice section from the project's agent instructions. Otherwise, the skill preserves the writer's voice.
 
 ## What it catches
 
@@ -39,6 +39,11 @@ You get conform mode when you pass `--conform` or `--style <path>`, or when a `H
 | Synonym cycling | the agent, then the assistant, then the tool |
 | Fake-profound kicker | the closing metaphor that mic-drops |
 | Summary-recap ending | "In conclusion…" |
+| False range | "from X to Y" where no range exists |
+| Chatbot wrapper | "Great question", "I hope this helps", offers to continue |
+| Knowledge-limit padding | a cutoff disclaimer followed by a guess |
+| Unraised objection | rejects a concern or option nobody raised |
+| Diff-anchored prose | docs that explain the old version instead of current behavior |
 | Lexical tells | delve, leverage, robust, pivotal, tapestry, testament |
 | Formatting slop | em dashes, Title Case Headings, emoji bullets, decorative bold |
 
@@ -53,7 +58,7 @@ In 1982 David Ogilvy sent his agency a one-page memo called "How to Write". Its 
 | Write the way you talk | Reads the draft aloud; fixes wherever it stumbles |
 | Short words, sentences, paragraphs | Flags Latinate words with plain equivalents, sentences that lose the thread, fat paragraphs |
 | Never use jargon | Flags invented abstractions (`operationalize`, `actionability`), corporate filler, and unexplained domain terms |
-| Check your quotations | Flags every quote, stat, date, and attribution as unverified. Never invents or completes one. |
+| Check your quotations | Flags load-bearing quotes, stats, attributions, and unsupported claims. Never invents or completes one. |
 | Make the ask crystal clear | Checks whether a reader could state the next action after one pass |
 
 The other five rules belong to you, not to a skill: read Roman-Raphaelson, sleep on it and read it aloud in the morning, get a colleague to improve it, and if you want action from one person, go ask them instead of writing. The skill surfaces the relevant one on a high-stakes draft rather than pretending to have run it.
@@ -70,7 +75,7 @@ It also names **what's working**, so you don't edit away your own good stuff on 
 
 ## It checks its own work
 
-After editing, the skill runs its output against [`eval.md`](eval.md), a 35-check pass/fail list covering whether it invented anything, whether it flattened your voice, whether each pattern is actually gone, whether the Ogilvy rules hold, and whether it over-corrected. Any fail and it fixes the draft and re-checks before you see it.
+After editing, the skill runs its output against [`eval.md`](eval.md), a 38-check pass/fail list. The checks cover facts, voice, pattern removal, plain language, and over-correction. Any failure triggers another edit and check.
 
 ## Install
 
@@ -123,7 +128,7 @@ Examples:
 
 ## Give conform mode a voice
 
-Preserve mode needs no setup: it works from your draft. Conform mode needs a target, and its built-in default is direct, concise, and no-em-dash. If that isn't the voice you want, drop a `HUMANIZE_STYLE.md` in your project root and the skill will use it instead (and switch to conform mode automatically):
+Preserve mode needs no setup. Conform mode needs a target voice. Add a `HUMANIZE_STYLE.md` file to the project root to switch modes automatically:
 
 ```markdown
 # Voice
@@ -134,7 +139,7 @@ Preserve mode needs no setup: it works from your draft. Conform mode needs a tar
 - Sentences can run long if the rhythm earns it.
 ```
 
-Resolution order: `--style <path>` → `HUMANIZE_STYLE.md` → a voice section in your `CLAUDE.md` / `AGENTS.md` / `.cursorrules` → the built-in default. See [`HUMANIZE_STYLE.example.md`](HUMANIZE_STYLE.example.md).
+Resolution order: explicit flag, `--style <path>`, `HUMANIZE_STYLE.md`, then a relevant voice section in project instructions. Without a target, the skill uses preserve mode. See [`HUMANIZE_STYLE.example.md`](HUMANIZE_STYLE.example.md).
 
 ## What it won't do
 
@@ -172,6 +177,8 @@ For anything larger, email **amin@avanvision.com**:
 - **David Ogilvy**, "How to Write" (internal memo, Ogilvy & Mather, 1982). The rules are paraphrased here, not reproduced. Ogilvy's first rule points at *Writing That Works* by Kenneth Roman and Joel Raphaelson, which is the source text behind most of the memo.
 - **[Nicolas Cole](https://x.com/Nicolascole77)** for the memo transcription and the commentary that turned it into something checkable ([July 2026](https://x.com/Nicolascole77/status/2072662998326415447)).
 - **[petergyang/no-ai-slop](https://github.com/petergyang/no-ai-slop)** (MIT) for several sentence-shape patterns this skill was missing (colon reveals, faux-insight setups, fake-profound kickers, synonym cycling), for the self-check-against-an-eval-file approach, and for the severity-sorted audit format. Patterns were reimplemented here rather than copied, but the debt is real. Worth using on its own.
+- **[blader/humanizer](https://github.com/blader/humanizer)** (MIT) for false-range, chatbot-wrapper, stale-knowledge, fake-objection, and current-state documentation checks. This skill adapts the ideas to its preserve/conform contract.
+- **[Tradelord223/plain-english](https://github.com/Tradelord223/plain-english)** (MIT) for outcome-first explanations, exact technical channels, and the define-once rule for unavoidable jargon.
 - The AI-tell bank also draws on Wikipedia's "Signs of AI writing", academic word-frequency studies of post-2022 published text (the PubMed "delve" spike being the best-known), and various editor and copywriter writeups.
 
 ## License

@@ -1,6 +1,6 @@
 # AI-slop tell bank (extended reference)
 
-Distilled from Wikipedia "Signs of AI writing", academic word-frequency studies (PubMed "delve" +400% post-2022), and editor/copywriter writeups. Use this when SKILL.md's baked checklist isn't enough, or to explain *why* a phrase is a tell.
+Distilled from Wikipedia "Signs of AI writing", academic word-frequency studies, editor and copywriter sources, `blader/humanizer`, and `Tradelord223/plain-english`. Use this reference when the checklist is not enough or when the user asks why a pattern is weak.
 
 **Golden rule:** no single tell is proof. One em dash is fine. A pile of tells together is the signal. Edit for the pile, not the individual.
 
@@ -57,6 +57,12 @@ The adverbs need a lighter hand than the rest. "Honestly, I have no idea" and "i
 - **Synonym cycling (elegant variation)** — rotating terms for the same thing so a word doesn't repeat: the agent, then the assistant, then the tool, then the system. Reads as vocabulary anxiety. If the clear word is right, repeat it. Repetition of the correct noun is invisible to readers; rotation is not.
 - **Fake-profound kickers** — the closing line that turns the argument into a metaphor or aphorism. "The tools change. The craft doesn't." The right fix is deletion, not a better metaphor. Rewriting the kicker keeps the shape that made it slop; end on the clearest concrete sentence the draft already has.
 - **Rhetorical setups** — "What if I told you", "Think about it:", "Plot twist:", and self-answered "Question? Answer." pairs.
+- **False ranges** — "from X to Y" when X and Y do not form a scale, sequence, or real span. Replace the range with a direct list.
+- **Formulaic challenge and outlook sections** — a stock problem paragraph followed by vague optimism. Keep sourced problems or plans. Cut the frame.
+- **Heading echoes** — a heading followed by a first sentence that restates the heading before the text gives a new fact.
+- **Diff-anchored prose** — documentation or comments that narrate what the old version did. Describe current behavior unless the genre is about change.
+- **Unraised objections** — "I'm not saying", "don't get me wrong", or "you might think" when no reader or source raised the objection. Keep real objections that the text attributes and answers.
+- **Fake alternatives** — an unlikely option introduced only so the draft can reject it. State the actual constraint instead.
 
 ## 4. Punctuation & formatting tells
 
@@ -75,6 +81,9 @@ The adverbs need a lighter hand than the rest. "Honestly, I have no idea" and "i
 - **Marketing voice on a non-marketing task** — "Elevate your workflow", "Unlock the power of", "Take it to the next level".
 - **Abstraction over specifics.** "Drives meaningful results" instead of "cut load time from 4s to 800ms". Concrete nouns and real numbers are the strongest human signal.
 - **Engagement bait** — rhetorical question closers, "Let me know in the comments", manufactured urgency.
+- **Chatbot wrappers** — "Certainly", "Great question", "I hope this helps", process narration, or an offer to continue inside a standalone deliverable.
+- **Knowledge-limit padding** — cutoff dates, "details are scarce", and "based on available information" used before a guess. State only what the source supports.
+- **Stacked qualifiers** — several caveats that repair an earlier overstatement. Keep the smallest qualifier that preserves the source's uncertainty.
 
 ## 6. Positive humanizing moves (what to do instead)
 
@@ -95,5 +104,6 @@ The adverbs need a lighter hand than the rest. "Honestly, I have no idea" and "i
 
 - A single em dash, one rule-of-three, or one contraction is not slop. Context decides.
 - Technical and legal writing is *meant* to be plain and repetitive. Don't inject personality there.
+- Code identifiers, commands, paths, types, error text, product names, and terms of art must stay exact. Define an unfamiliar term once when the audience needs it.
 - Some flagged words are sometimes the right word ("crucial" when something is actually crucial). Judgement over keyword-matching.
 - The goal is writing that reads like a sharp human wrote it, not text engineered to beat an AI detector.

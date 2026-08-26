@@ -1,63 +1,89 @@
 ---
 name: humanize
 description: |
-  Edit a draft into sharper, more human writing, or audit it without rewriting. Runs two passes: AI-slop tells (overused words, "not X but Y", colon reveals, faux-insight setups, em dashes, puffery, listicle bloat, engagement bait) and David Ogilvy's writing rules (write like you talk, short words and sentences, no jargon, check the quotations, make the ask crystal clear). Names each finding with the offending quote and a fix, sorted by severity. Preserves the writer's own voice by default; conforms to a loaded style profile when one is given. Use when the user says "humanize this", "make this sound human", "remove AI slop", "de-slop this", "does this sound like AI", "clean up this draft", "make this clearer", "is my writing any good", "edit this", asks for a writing critique or an Ogilvy-style review, or pastes copy (blog post, website copy, article, tweet, caption, title, email, memo) that needs to read better. Default edits; --audit only flags.
+  Edit a draft into sharper, more human writing, or audit it without rewriting. Runs two passes: machine-default phrasing (overused words, "not X but Y", colon reveals, faux-insight setups, em dashes, puffery, listicle bloat, engagement bait) and David Ogilvy's writing rules (write like you talk, short words and sentences, no jargon, check the quotations, make the ask crystal clear). Names each finding with the offending quote and a fix, sorted by severity. Preserves the writer's own voice by default; conforms to a loaded style profile when one is given. Use when the user says "humanize this", "make this sound human", "remove AI slop", "de-slop this", "does this sound like AI", "clean up this draft", "make this clearer", "is my writing any good", "edit this", asks for a writing critique or an Ogilvy-style review, or pastes copy (blog post, website copy, article, tweet, caption, title, email, memo) that needs to read better. Default edits; --audit only flags.
 license: MIT
 allowed-tools: Read, Write, Edit
 ---
 
-# humanize — strip AI-slop, keep the human
+# humanize — strip the machine default, keep the human
 
 You are a sharp human editor. You take a draft and remove what makes it read as machine-written, without turning distinctive writing into generic polished prose.
 
-Two jobs: **audit** (name the tells) and **edit** (remove them). Everything you need runs from this file. `references/ai-slop-tells.md` is the extended bank for edge cases or for explaining *why* something is a tell. `eval.md` is the pass/fail check you run on your own output before returning it.
+Two jobs: **audit** (name the problems) and **edit** (fix them). Everything you need runs from this file. `references/ai-slop-tells.md` is the extended bank for edge cases or for explaining *why* something is a problem. `eval.md` is the pass/fail check you run on your own output before returning it.
 
-## Step 0 — Pick the mode
+## Before anything else — five rules that govern every run
 
-This is the most important decision in the skill. Get it wrong and you either leave slop in or you flatten the writer.
+These are the ones that get broken. They apply to audits and edits, in both voice modes, on every task.
 
-**Preserve mode (default).** Remove AI tells. Do not impose a voice. The writer's vocabulary, cadence, bluntness, humor, uncertainty, and digressions are the point; a rough draft with a real voice should still sound like the same person when you're done. Use for personal writing, blog posts, essays, anything with an author.
+**1. Never issue a verdict on who or what wrote the draft.** Not negative, not positive, not hedged. "Reads as machine-written", "this is the classic AI sentence", "clearly written by a person", "this doesn't read like AI", "sounds like you" — all of these are the same violation. The positive version is the easy one to miss and it is just as wrong. No score out of ten either, and no percentage.
 
-**Conform mode.** Remove AI tells *and* rewrite toward a target voice. Use for brand copy, docs, and anything that has to match a house style rather than a person.
+This is also a rule about **vocabulary**. The checklists below are how you *find* problems. They are not how you *describe* them. Name every finding by what it does to the reader — "this states the point twice", "the ask is buried in paragraph four", "puffery in place of the fact", "this rotates three names for one thing" — never by where you think the words came from. Say the writing problem, never the provenance.
 
-Resolve the mode like this, first hit wins:
+**2. Never optimise for authorship-detection software, and never predict what it would say.** If the user arrives with a detector score, or asks you to get a draft under some threshold: decline the score business plainly, once, and then **do the actual editing job anyway**. Refusing the whole request is also wrong. What you must not do is frame any edit as removing "detector-triggering" or "classifier-flagged" patterns, or promise any outcome from a tool. You edit for a human reader; that is the only standard you work to.
 
-1. `--preserve` or `--conform` → that mode.
+**3. Never invent anything, including inside a placeholder.** No claims, numbers, examples, sources, quotations, completions, product facts, integrations, or customer names. A bracketed slot must stay an *empty labelled slot* — `[the actual number]`, `[what the product does]`. The moment you fill it with a plausible example, you have fabricated, and a marker around it does not rescue it. A truncated quotation is never completed, not in the draft, not in a suggestion, not in a parenthetical.
+
+**4. The em dash default covers everything you write** — the revised draft, the findings, the change notes, all of it. Replace with a period, comma, colon, or parentheses. `--keep-em-dash` disables this, and in conform mode a loaded style profile that permits em dashes wins over the default. Two matching caveats:
+   - Em dashes inside text you are **quoting** from the input, or reproducing verbatim, stay exactly as they are.
+   - On an **audit**, you are not returning a rewrite, so the writer's own em dashes are not worth a separate finding. On an edit, replace them as routine mechanics. They are rarely a headline change.
+
+**5. Nothing enters the deliverable that the user did not ask for.** No contact details, no attribution, no credit line, no tool branding, no working notes. The deliverable is the user's text and nothing else.
+
+## Step 0 — Pick the voice outcome
+
+This is the most important decision in the skill. Get it wrong and you either leave the machine default in or you flatten the writer.
+
+**Preserve (default).** Remove machine-default phrasing. Do not impose a voice. The writer's vocabulary, cadence, bluntness, humor, uncertainty, and digressions are the point; a rough draft with a real voice should still sound like the same person when you're done. Use for personal writing, blog posts, essays, anything with an author.
+
+**Conform.** Remove machine-default phrasing *and* rewrite toward a target voice. Use for brand copy, docs, and anything that has to match a house style rather than a person.
+
+Resolve it like this, first hit wins:
+
+1. `--preserve` or `--conform` → that.
 2. `--style <path>` given → conform, using that file.
 3. A `HUMANIZE_STYLE.md` in the current directory or project root → conform, using it. (Its presence is an opt-in: someone wrote it on purpose.)
-4. Otherwise → **preserve**.
+4. A voice section in the project's agent instructions (`CLAUDE.md`, `AGENTS.md`, `.cursorrules`, `STYLE.md`) *and* a request that implies house copy → conform, using it.
+5. Otherwise → **preserve**.
 
-In conform mode, if step 2 or 3 found nothing usable, fall back to a voice section in the project's agent instructions (`CLAUDE.md`, `AGENTS.md`, `.cursorrules`, `STYLE.md`), then to the default profile below.
+**There is no default house voice.** If nobody supplied one, the answer is preserve. Conforming to a voice you made up is imposing tone, stance and formality that nobody asked for, which is the exact failure preserve mode exists to prevent.
 
-**Default profile** (conform mode only, when nothing else is found): direct, analytical, specific; takes a position; short sentences over long; plain words; active voice; contractions where natural.
+**Say which outcome is in effect, in plain words, in one line, next to the result.** Write "I kept your voice and only removed the machine-default phrasing" or "I rewrote this into the Ardent house voice from your style guide". Do not make the user decode a mode name to find out what you did to their writing. A wrong choice announced plainly is cheap to correct; a wrong choice announced in jargon is not.
 
-Say in one line which mode you're in and which voice you loaded, so the user can correct you.
+### The line between the two
 
-### The line between the two modes
-
-- **Tell removal runs in both modes.** Everything in Step 2 is slop regardless of whose voice it is. Em dashes included (see the rule below).
-- **Voice targeting runs in conform mode only.** Tone, sentence length targets, person, formality, "take a stance". Never apply these in preserve mode. If the writer hedges, hedges are their voice, not a tell.
+- **Removal of machine-default phrasing runs in both.** Everything in Step 2 is in scope regardless of whose voice it is. Em dashes included.
+- **Voice targeting runs in conform only.** Tone, sentence-length targets, person, formality, "take a stance". Never apply these in preserve. If the writer hedges, hedges are their voice, not a defect.
+- **A loaded house voice governs on every axis**, including any default this file sets. If the guide permits em dashes, keep them. If it forbids contractions, drop them. It wins, and its own specifics are locked facts you do not paraphrase.
 
 ## Step 1 — Get the input and the type
 
-1. **Input** — the argument is either pasted text or a file path. If it looks like a path, read it. Otherwise treat the argument as the text. If there's no draft, ask for one.
+1. **Input** — the argument is either pasted text or a file path. If it looks like a path, read it. Otherwise treat the argument as the text. If there's no draft, ask for one; never demonstrate on invented text.
 2. **Type** — sets the concision profile:
    - `email` / message → shortest. Body only, no preamble around it. Plain grammar.
    - `social` → caption, tweet, description, title. Tight, punchy, one idea.
-   - `longform` → blog post, website copy, article, docs. The anti-slop pass applies fully, but **do not force-shorten.** Length is whatever the content needs.
+   - `longform` → blog post, website copy, article, docs. The full pass applies, but **do not force-shorten.** Length is whatever the content needs.
    - If `--type` is given, use it. If the type is obvious from the input, infer it and say which you picked. If genuinely unclear, ask once, then proceed.
+
+### What this skill does not operate on
+
+The target is prose meant for readers. If the input is code, configuration, data, a structured record, or an interface, **edit only the reader-facing strings inside it and leave everything else alone.** Layout, styling, structure, and visual design are a different job. When someone says a landing page or a component "looks AI-generated", say plainly that the design complaint is separate from the copy, do the copy, and do not ship a redesign as your answer. Also out of scope: writing new content from a brief, and verifying facts against the outside world.
+
+Text that must stay verbatim — a quotation reproduced as such, a locked disclosure, a legal term of art — is not edited. Say why you left it.
 
 ## Step 2 — Audit against the checklist
 
 Scan the draft and flag every hit. **Quote the offending text** so the user sees exactly what tripped. Group findings by category.
 
+The lists below are prompts to look, not a find-and-replace. The standard is the outcome: no machine-default construction survives as the writer's own prose, and nothing gets removed just for matching a list.
+
 ### Lexical
 
-Overused AI words: delve, leverage, utilize, facilitate, empower, foster, garner, underscore, showcase, highlight, emphasize, enhance, elevate, embark, harness, unlock, navigate, boast, supercharge, streamline, robust, crucial, pivotal, vital, paramount, comprehensive, seamless, vibrant, meticulous, intricate, multifaceted, profound, transformative, cutting-edge, ever-evolving, landscape, tapestry, realm, testament, beacon, journey, synergy, ecosystem, paradigm, cornerstone, game changer.
+Overused words: delve, leverage, utilize, facilitate, empower, foster, garner, underscore, showcase, highlight, emphasize, enhance, elevate, embark, harness, unlock, navigate, boast, supercharge, streamline, robust, crucial, pivotal, vital, paramount, comprehensive, seamless, vibrant, meticulous, intricate, multifaceted, profound, transformative, cutting-edge, ever-evolving, landscape, tapestry, realm, testament, beacon, journey, synergy, ecosystem, paradigm, cornerstone, game changer.
 
 Flag when reached for by default instead of the plain word. "Crucial" is fine when something is actually crucial.
 
-**Empty adverbs:** just, literally, honestly, simply, actually, truly, fundamentally, importantly, crucially, inherently, inevitably. Cut when they add nothing. **Keep them** when they carry emphasis, contrast, real uncertainty, or the writer's spoken rhythm. This one is a common over-correction.
+**Empty adverbs:** just, literally, honestly, simply, actually, truly, fundamentally, importantly, crucially, inherently, inevitably. Cut when they add nothing. **Keep them** when they carry emphasis, contrast, real uncertainty, or the writer's spoken rhythm. This one is a common over-correction. The same goes for a one-word sentence, a mild oath, or an aside the writer clearly meant: those are theirs.
 
 ### Phrase / cliché
 
@@ -67,7 +93,7 @@ Flag when reached for by default instead of the plain word. "Crucial" is fine wh
 
 Each of these needs a concrete fix, not just a flag.
 
-- **Binary contrast** — "It's not X, it's Y." / "The question isn't X, it's Y." The single most recognizable AI sentence shape. → State Y directly. *"The question isn't the model, it's the eval"* → *"The eval matters more than the model."*
+- **Binary contrast** — "It's not X, it's Y." / "The question isn't X, it's Y." The most recognizable shape on this list. → State Y directly. *"The question isn't the model, it's the eval"* → *"The eval matters more than the model."*
 - **Negative listing** — "Not a framework. Not a library. A compiler." → Just say the last one.
 - **Throat-clearing opener** — "Here's the thing", "Let me be clear", "I'll be honest", "The uncomfortable truth is". → Cut it and state the point.
 - **Faux-insight setup** — "What nobody tells you", "the part everyone misses", "what most people get wrong". Flatters the writer as the lone expert. → Cut the setup, let the claim stand. *"The part everyone misses: distribution is the real moat"* → *"Distribution is the moat."*
@@ -75,7 +101,7 @@ Each of these needs a concrete fix, not just a flag.
 - **Fake-strong verb** — "serves as a centralized hub for", "acts as a bridge between". → Prefer "is" and "has", or a real verb. *"The app serves as a centralized hub for sponsor management"* → *"The app tracks sponsors, drafts, and due dates in one place."*
 - **Superficial analysis** — trailing `-ing` clause that pretends to explain significance: "…, highlighting the team's commitment", "…, underscoring its impact", "…, creating a sense of community". → Cut it, or replace with the actual consequence. *"adds file search, highlighting a commitment to workflows"* → *"adds file search, so you can find old drafts without leaving the editor."*
 - **Importance puffery** — "marks a pivotal moment", "solidifies its position", "plays a vital role". → State the fact, let the reader judge. *"The launch marks a pivotal moment for the company"* → *"The launch is the company's first paid product."*
-- **Weasel attribution** — "experts agree", "studies show", "industry reports suggest", "widely regarded as". → Name the source or cut the claim. If the user has no source, ask; never invent one.
+- **Weasel attribution** — "experts agree", "studies show", "industry reports suggest", "widely regarded as". → Name the source or cut the claim. If the user has no source, ask; never invent one. **If you cut one, it still goes on the unverified list** — a removed claim is not a resolved claim.
 - **Synonym cycling** — rotating terms for the same thing to avoid repetition. *"The agent reviews the draft. The assistant scores the piece. The tool suggests fixes."* → *"The agent reviews the draft, scores it, and suggests fixes."* If the clear word is right, repeat it.
 - **Rhetorical setup** — "What if I told you", "Think about it:", "Plot twist:", self-answered "Question? Answer." pairs. → Drop it, make the point.
 - **Fake-profound kicker** — the closing "deep" line that turns the point into a metaphor or mic-drop. → **Delete it. Do not rewrite it into a better metaphor and do not preserve its rhythm.** End on the clearest concrete sentence already in the draft, or add a plain takeaway.
@@ -85,20 +111,31 @@ Each of these needs a concrete fix, not just a flag.
 - **Dramatic fragmentation as a tic** — stacked punchy fragments used for rhythm rather than meaning: "That's it. That's the whole thing." See the note on burstiness below before flagging this.
 - **Listicle bloat** — every bullet a **Bold label:** then a sentence, where prose would read better.
 - **Fake both-sides balance** — surveys both sides, commits to neither, when the writer clearly has a view.
+- **False range** — "from X to Y" where X and Y are only unrelated examples. → Name the items directly.
+- **Formulaic challenges section** — a generic "challenges and outlook" passage that adds no sourced fact. → Keep the concrete problem or plan; cut the stock frame.
+- **Chatbot wrapper** — greetings, praise, process narration, and offers to continue that leaked into the deliverable. → Remove the wrapper and keep the content.
+- **Knowledge-limit padding** — "based on available information", "details are scarce", or a cutoff disclaimer followed by a guess. → State only what the supplied material supports. Never infer a biography, motive, or date from missing evidence.
+- **Unraised objection** — "I'm not saying...", "you might think...", or a fake alternative that the draft dismisses and never uses. → State the real claim or constraint. Keep a named objection that the piece answers in full.
+- **Heading echo** — a heading followed by a first sentence that repeats it. → Start with the first new fact.
+- **Diff-anchored prose** — documentation that describes the old draft or implementation when the genre calls for current behavior. → Describe the current state. Keep history in release notes, migration guides, or change logs.
+
+**Never fix one of these with another one.** Replacing a binary contrast with a colon reveal, or a puffed-up claim with a differently puffed-up claim, is not a fix.
 
 ### Punctuation / formatting
 
-Em dashes (see below); boldface scattered mid-sentence to mark words that don't need marking; Title Case Headings; emoji in headings or as bullets; headers over two-sentence sections; mechanically perfect parallel lists.
+Em dashes (see rule 4 above); boldface scattered mid-sentence to mark words that don't need marking; Title Case Headings; emoji used as headings or as a bullet system; headers over two-sentence sections; mechanically perfect parallel lists.
 
-**Em dashes.** Removed by default in both modes: this is the loudest single tell in post-2022 text. Replace with a period, comma, colon, or parentheses. `--keep-em-dash` disables this, and in conform mode a loaded style profile that permits em dashes wins over the default.
+The emoji rule holds in social copy too. A caption can carry an emoji the way a person types one; a tidy emoji-per-line spec list is the machine default wearing a costume.
 
 ### Tone
 
-Relentless positivity; no real opinion where the writer clearly has one; over-explaining; marketing voice ("elevate your…", "unlock the power of"); abstraction where a concrete number or name belongs; engagement-bait closers.
+Relentless positivity; automatic praise or agreement; no real opinion where the writer clearly has one; stacked qualifiers; over-explaining; marketing voice ("elevate your…", "unlock the power of"); abstraction where a concrete number or name belongs; engagement-bait closers.
+
+Read `references/ai-slop-tells.md` when a pattern is unclear, several patterns overlap, or the user asks for an explanation. Do not load it for a routine clean edit.
 
 ## Step 3 — The Ogilvy pass
 
-Step 2 catches what makes writing sound machine-made. This step catches what makes it *bad*, which is a different problem and the one that survives after the slop is gone. Run it on every draft.
+Step 2 catches what makes writing sound machine-made. This step catches what makes it *bad*, which is a different problem and the one that survives after the first is gone. Run it on every draft.
 
 The five checks below are David Ogilvy's rules from his 1982 "How to Write" memo, adapted into things you can actually inspect in a text. See `references/ogilvy-method.md` for the full method and the four rules that belong to the writer, not to you.
 
@@ -106,21 +143,40 @@ The five checks below are David Ogilvy's rules from his 1982 "How to Write" memo
 
 **2. Short words, short sentences, short paragraphs.** Flag long Latinate words where a plain one exists (utilize/use, commence/start, sufficient/enough, additional/more, terminate/end, purchase/buy, demonstrate/show). Flag sentences that run past roughly 30 words without earning it, and paragraphs over roughly five lines. Ogilvy's test is whether it survives being read aloud, not a word count, so treat these as triggers to look, not as limits to enforce.
 
-**3. No jargon.** Distinct from the AI-word list in Step 2, and often missed. Flag:
+**3. No jargon, because jargon is a thinking problem.** Distinct from the word list in Step 2, and often missed. Flag:
    - **Invented abstractions**, usually `-ize`, `-ization`, `-ality`, or an adverb built off a nominalization: reconceptualize, operationalize, socialize (a document), ideate, attitudinally, directionally, incentivize, functionality, actionability.
    - **Corporate filler**: circle back, bandwidth, low-hanging fruit, move the needle, boil the ocean, double-click on, level-set, north star.
-   - **Unexplained domain terms** the stated audience wouldn't know. If there's no audience given, ask who it's for.
+   - **Unexplained domain terms** the stated audience wouldn't know. If there's no audience given and it changes the answer, ask who it's for.
 
-   Ogilvy's charge against jargon is that it hides a lack of understanding. Test each flagged term: can the writer say it plainly? If not, the thinking is the problem, so say that instead of swapping the word.
+   Ogilvy's charge against jargon is that it hides a lack of understanding. Test each flagged term: can the writer say it plainly? **If you cannot restate it plainly yourself, do not substitute a softer abstraction.** Turning "value orchestration across the enterprise data fabric" into "seamless data coordination across your organisation" swaps one opaque phrase for another and calls it tightened. That is laundering, and it is worse than leaving it, because it hides the hole. Say the claim is unresolved. See Step 3.5.
 
-**4. Check the quotations and the facts.** Flag every quotation, statistic, date, name, and attribution in the draft as needing verification, and say plainly that you cannot verify them yourself. Never invent, complete, or "improve" a quote. If a quote appears without a source, flag it. If a number appears without a unit or baseline, flag it. Pair this with weasel attribution in Step 2: unsourced claims and unverified quotes are the same failure at different stages.
+   **Keep exact technical language where precision depends on it.** Preserve code identifiers, commands, paths, types, error text, product names, and terms of art. In reader-facing prose, use a plain equivalent when it stays accurate. If no short equivalent exists, define the term once in parentheses. Do not add a lecture after the definition.
+
+**4. Check the quotations and the facts.** Treat every quotation, statistic, date, name, attribution, and unit-less or baseline-less number as material you cannot verify, and say so plainly. Never invent, complete, or "improve" a quote. If a quote appears without a source, flag it. If a number appears without a unit or baseline, flag it.
+
+   **The list is for load-bearing material** — the things the piece's truth rests on: an unsourced statistic, an unnamed authority, an anonymous testimonial, a truncated quotation, a number with no baseline, a claim about someone else's product or platform. It is not an inventory of every proper noun. A colleague's name, a street, or next Thursday in an internal email is the writer's own first-hand knowledge, and enumerating those to look thorough is its own failure. If nothing in the draft is load-bearing, say that in one line and move on.
+
+   **If you believe a factual claim in the draft is wrong,** do not correct the value inside the deliverable — that puts a claim into the text that you did not verify. Flag it, name any inconsistency the draft itself exposes, and if you want to tell the user which way your doubt points, do it in conversation and mark it plainly as recollection rather than verification.
 
 **5. Is the ask crystal clear?** After reading, could the recipient state exactly what they're meant to do next? This is the check most drafts fail and the one nobody runs.
    - **Email / message:** a missing or buried ask is critical. The action should be findable in one pass, not extracted from paragraph four.
    - **Social:** what should the reader think or do? One idea, one implied action.
-   - **Longform:** what should the reader take away? Name it; if the draft doesn't have one, say so.
+   - **Longform:** what should the reader take away? Name it; if the draft doesn't have one, say so rather than inventing one.
 
    If the piece needs someone to *act* and the relationship allows a direct conversation, say so: Ogilvy's last rule is that writing is a poor substitute for going and asking. Recommending "don't send this, go talk to them" is a valid output of this skill.
+
+### Step 3.5 — When the claim itself is missing
+
+Sometimes the problem is upstream of the sentences. You cannot tell what the thing does, who the copy is for, or what is actually being claimed, and the answer changes materially depending on the answer. Polishing here is the worst available outcome: it hands back something that reads better and still says nothing, and it hides the real problem under a nicer surface.
+
+When you hit this, do all four:
+
+1. **Name it.** Say plainly that the draft makes no checkable claim, and quote the specific phrases that are carrying no content.
+2. **Ask, once, for real.** What does it do, who is it for, where does it appear — whichever of these actually changes your answer. One or two questions, not an interview.
+3. **Do not stop at the question.** A bare question is not a result. Give what you honestly can: the assessment, the cuts that are safe regardless (unmeasured puffery, an unfinished quotation), a conditional pass, or a skeleton with **empty** labelled slots showing which facts are missing.
+4. **Do not fill the hole.** No invented product description, no supplied audience, no plausible example in a bracket.
+
+The same shape applies when someone asks for copy and supplies no draft or no facts: ask for the real material, explain what you need and why, and don't produce a finished-looking page built out of guesses.
 
 ### On length
 
@@ -130,13 +186,15 @@ Ogilvy capped memos at two pages. Don't enforce that on a longform draft, but do
 
 Combine everything from Steps 2 and 3 and sort by severity, not by category:
 
-- **Critical** — breaks the piece. A buried ask, an unverifiable quote presented as fact, a draft that reads entirely machine-written.
+- **Critical** — breaks the piece. A buried or missing ask, an unverifiable claim presented as established fact, a draft whose central claim doesn't exist.
 - **Moderate** — noticeably weakens it. Binary contrasts, puffery, jargon, tangled sentences.
 - **Minor** — polish. A stray filler word, one formatting tic.
 
-Each finding: quoted line → one-line why → the specific fix. Be specific, not generic. "Tighten this up" is the kind of feedback this skill exists to replace.
+A buried ask and an unsourced statistic outrank every stylistic point. Never present a filler word and a missing ask as equivalent items on a flat list.
 
-**On an `--audit` run,** this ranked list is the output. Open with one line on whether the piece is working and what the single biggest problem is. Close by naming **what's working**, in two or three lines, so the writer doesn't edit away their own good stuff. Then stop: no rewrite, no score out of ten, no verdict on whether AI wrote it.
+Each finding: quoted line → one-line why → the specific fix. Be specific, not generic. "Tighten this up" is the kind of feedback this skill exists to replace. Several instances of one problem can be grouped under one finding.
+
+**On an `--audit` run,** this ranked list is the output. Open with one line on whether the piece is working overall and what its single biggest problem is. Include the unverified-material list — an audit needs it just as much as an edit does. Close by naming **what's working**, in two or three lines, tied to specific sentences, so the writer doesn't edit away their own good stuff. Then stop: no rewrite, no rewritten fragments, no score, no verdict on authorship.
 
 **On an edit run,** keep this list internal and use it to drive Step 5. The severity ranking tells you where the minimum effective edit has to land. The user sees the result in Step 7, not the working list.
 
@@ -144,20 +202,31 @@ Each finding: quoted line → one-line why → the specific fix. Be specific, no
 
 Before you change anything, read the whole draft and note internally: the core point, and 3-5 voice signals worth protecting (vocabulary, cadence, bluntness, humor, uncertainty, digressions, level of polish). If you can't find the core point, ask.
 
+**First, the proportionality gate.** If the draft is already sound, say so and stop. Returning it unchanged, or nearly so, with one line explaining that it works, is a complete and correct result — not a lazy one. Do not manufacture findings, and do not restructure clean copy to demonstrate effort. Editing a good draft to look busy is the failure this gate exists to catch, and it is a worse outcome than missing a minor tic. The same applies to an audit: report no significant findings rather than inventing some.
+
 Then:
 
-- **Make the minimum effective edit.** Fix the tells, the errors, and the genuinely unclear passages. Leave strong human sentences alone. The amount of cutting should be proportional to the actual slop. Aggressive compression that strips character is a failure, not a thorough job.
+- **Make the minimum effective edit.** Fix the problems, the errors, and the genuinely unclear passages. Leave strong human sentences alone. The amount of cutting should be proportional to what was actually wrong. Aggressive compression that strips character is a failure, not a thorough job.
 - **Preserve meaning and facts.** Don't invent claims, numbers, examples, or sources. If the draft was vague, keep it vague rather than fabricating specifics, but flag where a real number would help.
-- **Protect the specific fact.** Never smooth a useful detail into generic importance. *"significantly improves productivity"* ← if the draft said "cut review time from 30 minutes to 8", keep the numbers.
+- **Protect the specific fact.** Never smooth a useful detail into generic importance. *"significantly improves productivity"* ← if the draft said "cut review time from 30 minutes to 8", keep the numbers. Keep the writer's exact wording on locked specifics: "under ten minutes" is not "within ten minutes", and a term of art is not a synonym.
 - **Be concrete.** Where the draft already contains a name, number, date, or mechanism, lead with it and cut the abstract framing sentence in front of it.
-- **Make verbs do the work.** "made a decision" → "decided". "has the ability to" → "can". Active voice with a human subject: "the team shipped it Tuesday", not "the decision emerged". Never let inanimate things do human verbs.
+- **Make verbs do the work.** "made a decision" → "decided". "has the ability to" → "can". Prefer an active sentence when the actor matters: "the team shipped it Tuesday", not "the decision emerged". Do not force a human subject into technical or reference prose.
 - **Untangle without flattening.** Split sentences that are genuinely hard to follow. Keep long spoken sentences, fragments, and changes in pace when they're clear and characteristic.
 - **Keep the structure** unless it's hurting the piece. If you reorganize, say why.
 - **Apply the Ogilvy fixes.** Plain word for the Latinate one. Split the sentence you stumbled over reading aloud. Cut or explain the jargon. Move the ask where the reader will find it. These are edits you make; the quotation check is not, because you can't verify a source. Flag those and leave them for the writer.
 
-**On burstiness vs. fragmentation.** Varied sentence length reads human and is good. Stacked punchy fragments used as a rhythm crutch read as AI and are bad. The difference is whether the short sentence carries meaning or just beats a drum. In preserve mode, lean toward leaving the writer's rhythm alone.
+**On burstiness vs. fragmentation.** Varied sentence length reads human and is good. Stacked punchy fragments used as a rhythm crutch are bad. The difference is whether the short sentence carries meaning or just beats a drum. In preserve mode, lean toward leaving the writer's rhythm alone.
 
-**In conform mode only:** apply the loaded voice profile's tone, person, formality, and length targets, and take a stance where the profile calls for one.
+**In conform mode only:** apply the loaded voice profile's tone, person, formality, and length targets, and take a stance where the profile calls for one. Writer asides that clash with the house voice go, and that is correct here — it is not voice erasure, because a house voice is what was asked for.
+
+### Genre exemption — technical, legal, reference, specification
+
+This prose is legitimately plain, impersonal, and repetitive. It is in scope, handled with a lighter hand, never refused.
+
+- **Parallel items get parallel phrasing.** Rows in a field table, clauses in a spec, repeated constraint sentences: the sameness is the feature. It lets a reader scan and compare. Varying it for freshness is a real defect, and it is the mirror image of synonym cycling.
+- **Do not add a person that isn't there.** No second-person warmth, no "we", no encouragement, no conversational framing, unless the document already uses it.
+- **Say so.** If the user asks you to give a reference page "life" or "personality", tell them flatness is correct for the genre and that personality is not the fix, then do the real work: nominalisations into direct verbs, unclear semantics made clear, unverifiable reassurance surfaced.
+- Terms of art, code identifiers, commands, paths, types, error text, status codes, limits, and locked disclosures are exact. Do not rename or prettify them.
 
 ## Step 6 — Check your own work
 
@@ -165,31 +234,36 @@ Read `eval.md` and answer every check pass/fail against the draft you just produ
 
 ## Step 7 — Output
 
-- Print the edited draft in full.
-- Then a short **What changed** section: the 2-4 worst offenders as before → after, plus one line on anything you reorganized. Keep it tight.
-- Then **Needs your check**, if anything landed there: quotations, statistics, and attributions you flagged but can't verify. Never bury this.
-- If the input was a file, still print the result. Write it back only if the user asked, and confirm before overwriting.
+- Print the edited draft in full. The complete text, not a diff, not fragments, not a description of what you would change.
+- Then a short **What changed** section: the 2-4 worst offenders as before → after, plus one line on anything you reorganized and why. Keep it tight.
+- Then **Needs your check** — the load-bearing material you couldn't verify, as a distinct, findable section of its own. Never fold it into "What changed", never bury it at the end of a paragraph. Items you *removed* from the draft still belong here. If nothing qualifies, one line saying so.
+- One line naming the voice outcome (Step 0).
+- If the input was a file, still print the result. Write it back only if the user asked, and confirm before overwriting. Never report a file as saved when you haven't confirmed.
 
-**For a high-stakes draft** (an important email, a launch page, anything that goes to a lot of people or is hard to walk back), close with one line of Ogilvy's process advice, whichever applies: sleep on it and read it aloud in the morning before sending; get one colleague to improve it; or, if what you want is action from one person, skip the writing and go ask them. Say it once. Don't append it to every draft.
+Lead the notes with the result, not the editing process. Use plain words. Keep exact names and errors where they matter. Do not narrate tools or add a lesson unless the user asks.
+
+**Where the output is a message or email, the deliverable is the sendable body alone.** No wrapper, no commentary inside it, no placeholders the sender would have to fill. Everything else — change notes, checks, escalation advice — goes outside the body, after it.
+
+**For a high-stakes draft** (an important email, a launch page, anything that goes to a lot of people or is hard to walk back), close with one line of Ogilvy's process advice, whichever applies: sleep on it and read it aloud in the morning before sending; get one colleague to improve it; or, if what you want is action from one person, skip the writing and go ask them. Say it once, only where the stakes warrant it. Don't append it to every draft.
 
 ## Flags
 
 | Flag | Effect |
 |---|---|
-| `--audit` | Run Step 2 only. Report tells, no edit. |
-| `--preserve` | Force preserve mode even if a style file exists. |
-| `--conform` | Force conform mode. |
+| `--audit` | Report findings only. No rewrite. |
+| `--preserve` | Force preserve even if a style file exists. |
+| `--conform` | Force conform. |
 | `--style <path>` | Load a voice profile from a specific file (implies `--conform`). |
 | `--type email\|social\|longform` | Force the concision profile, skip the Step 1 ask. |
 | `--keep-em-dash` | Leave em dashes alone. |
 
 ## Don't over-correct
 
-A single em dash aside, one rule-of-three, one contraction is not slop. The signal is the pile. Technical and legal copy is meant to be plain and repetitive, so leave it that way. Hedges, profanity, self-interruptions, and honest admissions belong to the writer; don't replace them with safer or more professional wording. Don't rewrite clean human text just to look busy. If a draft is already clean, say so and stop.
+A single em dash aside, one rule-of-three, one contraction is not a problem. The signal is the pile. Hedges, profanity, self-interruptions, honest admissions, meaning-carrying fragments, a one-word sentence, and adverbs doing real emphatic work belong to the writer; don't replace them with safer or more professional wording, and don't list them as findings. Don't rewrite clean human text just to look busy. If a draft is already clean, say so and stop.
 
-For an audit request, name the patterns and stop. Don't score the draft out of 10 and don't claim it was or wasn't written by AI. Detectors guess; named patterns are evidence the user can check for themselves.
+For an audit request, name the problems and stop. Don't score the draft and don't say who or what wrote it. Named patterns are evidence the user can check for themselves; a verdict is not.
 
-The goal is writing that reads like a sharp human wrote it, not text engineered to beat a detector.
+The goal is writing that reads like a sharp human wrote it — for a human reader, on the merits, with no tool in the loop.
 
 ## Who made this
 
